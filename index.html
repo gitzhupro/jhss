@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>设计师聚合搜索工具</title>
+    <style>
+        :root {
+            --card-size: 120px;
+            --gap-size: 1rem;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .search-box {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 16px 24px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            padding-right: 120px;
+        }
+        #searchInput:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 4px 12px rgba(0,123,255,0.2);
+        }
+        .search-engine-bar {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 12px;
+        }
+        .search-engine-icon {
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.2s;
+            border-radius: 50%;
+        }
+        .search-engine-icon:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        .platforms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(var(--card-size), 1fr));
+            gap: var(--gap-size);
+            margin-top: 2rem;
+        }
+        .platform-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: var(--card-size);
+            padding: 1rem;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            color: #333;
+        }
+        .platform-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: #007bff;
+        }
+        .platform-icon {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 12px;
+            object-fit: contain;
+        }
+        .platform-name {
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            line-height: 1.4;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-box">
+        <input type="text" 
+               id="searchInput" 
+               placeholder="输入设计关键词，例如：品牌设计"
+               autocomplete="off">
+        <div class="search-engine-bar">
+            <img src="https://www.google.com/s2/favicons?domain=bing.com&sz=64" 
+                 class="search-engine-icon" 
+                 alt="必应"
+                 onclick="searchWithBing()">
+            <img src="https://www.google.com/s2/favicons?domain=google.com&sz=64" 
+                 class="search-engine-icon" 
+                 alt="谷歌"
+                 onclick="searchWithGoogle()">
+        </div>
+    </div>
+    
+    <div class="platforms-grid" id="resultsContainer"></div>
+
+    <script>
+        const searchEngines = {
+            bing: keyword => `https://www.bing.com/search?q=${encodeURIComponent(keyword)}`,
+            google: keyword => `https://www.google.com/search?q=${encodeURIComponent(keyword)}`
+        };
+
+        const searchPlatforms = [
+            {
+                name: "Dribbble",
+                domain: "dribbble.com",
+                url: keyword => `https://dribbble.com/search/${encodeURIComponent(keyword)}`
+            },
+            {
+                name: "站酷",
+                domain: "www.zcool.com.cn",
+                url: keyword => `https://www.zcool.com.cn/search/content?word=${encodeURIComponent(keyword)}&recommendLevel=1`
+            },
+            {
+                name: "Behance",
+                domain: "www.behance.net",
+                url: keyword => `https://www.behance.net/search/projects?search=${encodeURIComponent(keyword)}`
+            },
+            {
+                name: "花瓣",
+                domain: "huaban.com",
+                url: keyword => `https://huaban.com/search?q=${encodeURIComponent(keyword)}`
+            },
+            {
+                name: "优设网",
+                domain: "www.uisdc.com",
+                url: keyword => `https://www.uisdc.com/?s=${encodeURIComponent(keyword)}`
+            },
+            {
+                name: "Pinterest",
+                domain: "www.pinterest.com",
+                url: keyword => `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(keyword)}`
+            },
+            {
+                name: "Awwwards",
+                domain: "www.awwwards.com",
+                url: keyword => `https://www.awwwards.com/inspiration_search/?text=${encodeURIComponent(keyword)}`
+            },
+            {
+                name: "暖鹊网",
+                domain: "www.nuanque.com",
+                url: keyword => `https://www.nuanque.com/?s=${encodeURIComponent(keyword)}`
+            },
+            {
+                name: "美叶",
+                domain: "www.meiye.art",
+                url: keyword => `https://www.meiye.art/search/${encodeURIComponent(keyword)}`
+            },
+            {
+                name: "小红书",
+                domain: "www.xiaohongshu.com",
+                url: keyword => `https://www.xiaohongshu.com/search_result?keyword=${encodeURIComponent(keyword)}&source=unknown`
+            },
+            {
+                name: "Notefolio",
+                domain: "notefolio.net",
+                url: keyword => `https://notefolio.net/search?search=${encodeURIComponent(keyword)}`
+            },
+            {
+                name: "语雀聚合搜索",
+                domain: "www.yuque.com",
+                url: keyword => `https://www.yuque.com/search?q=${encodeURIComponent(keyword)}&type=content&scope=%2F&tab=public&p=1&sence=modal`
+            }
+        ];
+
+        function generatePlatformCards() {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = searchPlatforms.map(platform => `
+                <a class="platform-card" 
+                   href="#" 
+                   data-platform="${platform.domain}"
+                   onclick="handleSearch(event, '${platform.domain}')">
+                    <img class="platform-icon" 
+                         src="https://www.google.com/s2/favicons?domain=${platform.domain}&sz=64" 
+                         alt="${platform.name}图标">
+                    <div class="platform-name">${platform.name}</div>
+                </a>
+            `).join('');
+        }
+
+        function handleSearch(event, domain) {
+            event.preventDefault();
+            const keyword = document.getElementById('searchInput').value.trim();
+            const platform = searchPlatforms.find(p => p.domain === domain);
+            
+            if (platform) {
+                const targetUrl = keyword ? 
+                    platform.url(keyword) : 
+                    `https://${platform.domain}`;
+                window.open(targetUrl, '_blank');
+            }
+        }
+
+        function searchWithBing() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            if (keyword) window.open(searchEngines.bing(keyword), '_blank');
+        }
+
+        function searchWithGoogle() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            if (keyword) window.open(searchEngines.google(keyword), '_blank');
+        }
+
+        generatePlatformCards();
+
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const keyword = e.target.value.trim();
+                if (keyword) window.open(searchEngines.bing(keyword), '_blank');
+            }
+        });
+    </script>
+</body>
+</html>
