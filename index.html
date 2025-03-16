@@ -4,43 +4,38 @@
     <meta charset="UTF-8">
     <title>设计师聚合搜索工具</title>
     <style>
-        /* 新增背景层开始 */
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background-image: url('wallpaper/1.png');
-            background-repeat: no-repeat;
-            background-position: center center;
-            background-size: cover;
-            -webkit-background-size: cover;
-            -moz-background-size: cover;
-            -o-background-size: cover;
-        }
-        /* 新增背景层结束 */
-
         :root {
-            --card-size: 120px;
-            --gap-size: 1rem;
-            --container-width: 800px;
+            --bg-angle: 90deg;
+            --bg-color1: #ffffff;
+            --bg-color2: #ffffff;
         }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        html {
+            background: linear-gradient(var(--bg-angle), var(--bg-color1), var(--bg-color2)); /* 使用 CSS 变量设置背景 */
+            transition: background 0.3s ease-in-out;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            max-width: var(--container-width);
-            margin: 2rem auto;
-            padding: 0 1rem;
-            background: transparent; /* 修改为透明背景 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
         }
+
         .search-box {
             position: relative;
             margin-bottom: 2rem;
             width: 100%;
-            max-width: var(--container-width);
+            max-width: 800px;
         }
+
         #searchInput {
             width: 100%;
             padding: 16px 24px;
@@ -52,11 +47,13 @@
             padding-right: 120px;
             box-sizing: border-box;
         }
+
         #searchInput:focus {
             outline: none;
             border-color: #007bff;
             box-shadow: 0 4px 12px rgba(0,123,255,0.2);
         }
+
         .search-engine-bar {
             position: absolute;
             right: 16px;
@@ -65,6 +62,7 @@
             display: flex;
             gap: 12px;
         }
+
         .search-engine-icon {
             width: 32px;
             height: 32px;
@@ -73,25 +71,27 @@
             transition: all 0.2s;
             border-radius: 50%;
         }
+
         .search-engine-icon:hover {
             opacity: 1;
             transform: scale(1.1);
         }
+
         .platforms-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(var(--card-size), 1fr));
-            gap: var(--gap-size);
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1rem;
             margin-top: 2rem;
-            max-width: var(--container-width);
-            margin-left: auto;
-            margin-right: auto;
+            max-width: 800px;
+            width: 100%;
         }
+
         .platform-card {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: var(--card-size);
+            height: 120px;
             padding: 1rem;
             background: #ffffff;
             border-radius: 12px;
@@ -101,17 +101,20 @@
             text-decoration: none;
             color: #333;
         }
+
         .platform-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 8px 24px rgba(0,0,0,0.12);
             border-color: #007bff;
         }
+
         .platform-icon {
             width: 40px;
             height: 40px;
             margin-bottom: 12px;
             object-fit: contain;
         }
+
         .platform-name {
             font-size: 14px;
             font-weight: 500;
@@ -124,6 +127,7 @@
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
         }
+
         .suggestions-container {
             position: absolute;
             width: 100%;
@@ -136,18 +140,71 @@
             overflow-y: auto;
             display: none;
         }
+
         .suggestion-item {
             padding: 12px 24px;
             cursor: pointer;
             transition: background 0.2s;
             color: #333;
         }
+
         .suggestion-item:hover {
             background: #f5f5f5;
         }
+
         .suggestion-highlight {
             color: #007bff;
             font-weight: 500;
+        }
+
+        /* 拾色器和角度选择器样式 */
+        .color-picker-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-picker, .angle-picker, .toggle-switch {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        .color-picker::-webkit-color-swatch-wrapper, .angle-picker::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .color-picker::-webkit-color-swatch, .angle-picker::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%;
+        }
+
+        .toggle-switch {
+            background-color: #ddd;
+        }
+
+        .toggle-switch.active {
+            background-color: #4caf50;
+        }
+
+        @keyframes rotateGradient {
+            0% {
+                --bg-angle: 0deg;
+            }
+            100% {
+                --bg-angle: 360deg;
+            }
+        }
+
+        .animate-gradient {
+            animation: rotateGradient 5s linear infinite;
         }
     </style>
 </head>
@@ -171,6 +228,14 @@
     </div>
     
     <div class="platforms-grid" id="resultsContainer"></div>
+
+    <!-- 拾色器和角度选择器容器 -->
+    <div class="color-picker-container">
+        <button class="toggle-switch" id="toggleSwitch"></button>
+        <input type="range" id="anglePicker" min="0" max="360" value="90" class="angle-picker">
+        <input type="color" id="colorPicker1" value="#ffffff" class="color-picker">
+        <input type="color" id="colorPicker2" value="#ffffff" class="color-picker">
+    </div>
 
     <script>
         const searchEngines = {
@@ -335,7 +400,7 @@
         }
 
         generatePlatformCards();
-        
+
         searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -343,6 +408,70 @@
                 if (keyword) window.open(searchEngines.bing(keyword), '_blank');
             }
         });
+
+        // 更新背景颜色
+        function updateBackground() {
+            const color1 = document.getElementById('colorPicker1').value;
+            const color2 = document.getElementById('colorPicker2').value;
+            const angle = document.getElementById('anglePicker').value;
+            document.documentElement.style.setProperty('--bg-angle', `${angle}deg`);
+            document.documentElement.style.setProperty('--bg-color1', color1);
+            document.documentElement.style.setProperty('--bg-color2', color2);
+            localStorage.setItem('bg-color1', color1); // 缓存颜色1
+            localStorage.setItem('bg-color2', color2); // 缓存颜色2
+            localStorage.setItem('bg-angle', angle); // 缓存角度
+        }
+
+        // 启动或停止背景角度动画
+        const toggleSwitch = document.getElementById('toggleSwitch');
+        let isAnimating = false;
+        let animationInterval;
+
+        function startAnimation() {
+            animationInterval = setInterval(() => {
+                const currentAngle = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bg-angle'));
+                const newAngle = (currentAngle + 1) % 360;
+                document.documentElement.style.setProperty('--bg-angle', `${newAngle}deg`);
+            }, 14); // 每14毫秒增加1度，约5秒旋转一圈
+        }
+
+        function stopAnimation() {
+            clearInterval(animationInterval);
+        }
+
+        function toggleAnimation() {
+            isAnimating = !isAnimating;
+            if (isAnimating) {
+                startAnimation();
+                toggleSwitch.classList.add('active');
+            } else {
+                stopAnimation();
+                toggleSwitch.classList.remove('active');
+                // 保存当前角度
+                const currentAngle = getComputedStyle(document.documentElement).getPropertyValue('--bg-angle').trim();
+                localStorage.setItem('bg-angle', parseInt(currentAngle));
+                document.getElementById('anglePicker').value = parseInt(currentAngle);
+            }
+        }
+
+        toggleSwitch.addEventListener('click', toggleAnimation);
+
+        // 读取缓存的背景颜色
+        const savedColor1 = localStorage.getItem('bg-color1');
+        const savedColor2 = localStorage.getItem('bg-color2');
+        const savedAngle = localStorage.getItem('bg-angle');
+        if (savedColor1 && savedColor2 && savedAngle) {
+            document.documentElement.style.setProperty('--bg-color1', savedColor1);
+            document.documentElement.style.setProperty('--bg-color2', savedColor2);
+            document.documentElement.style.setProperty('--bg-angle', `${savedAngle}deg`);
+            document.getElementById('colorPicker1').value = savedColor1;
+            document.getElementById('colorPicker2').value = savedColor2;
+            document.getElementById('anglePicker').value = savedAngle;
+        }
+
+        document.getElementById('colorPicker1').addEventListener('input', updateBackground);
+        document.getElementById('colorPicker2').addEventListener('input', updateBackground);
+        document.getElementById('anglePicker').addEventListener('input', updateBackground);
     </script>
 </body>
 </html>
