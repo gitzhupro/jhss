@@ -155,7 +155,7 @@
     <div class="search-box">
         <input type="text" 
                id="searchInput" 
-               placeholder="输入设计关键词，例如：品牌设计"
+               placeholder="输入搜索关键词"
                autocomplete="off">
         <div class="suggestions-container" id="suggestions"></div>
         <div class="search-engine-bar">
@@ -239,11 +239,11 @@
                 domain: "yuque.com",
                 url: keyword => `https://www.yuque.com/search?q=${encodeURIComponent(keyword)}&type=content&scope=%2F&tab=public&p=1&sence=modal`
             }
-            {
-                name: "UICN",
-                domain: "ui.cn",
-                url: keyword => `https://s.ui.cn/index.html?keywords=${encodeURIComponent(keyword)}&type=all`
-            }
+            // {
+            //     name: "UICN",
+            //     domain: "ui.cn",
+            //     url: keyword => `https://s.ui.cn/index.html?keywords=${encodeURIComponent(keyword)}&type=all`
+            // }
         ];
 
         const presetKeywords = [
